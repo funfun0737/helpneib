@@ -1,0 +1,124 @@
+<html>
+<head>
+<title>helpMePage.dart</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+.s1 { color: #6a8759;}
+.s2 { color: #cc7832;}
+.s3 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+helpMePage.dart</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">'package:cloud_firestore/cloud_firestore.dart'</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">'package:flutter/material.dart'</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">'package:flutter/rendering.dart'</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">'package:device_id/device_id.dart'</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">'package:geoflutterfire/geoflutterfire.dart'</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">'package:geolocator/geolocator.dart'</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">'package:google_maps_flutter/google_maps_flutter.dart'</span><span class="s2">;</span>
+
+class <span class="s0">HelpMePageLayout </span><span class="s2">extends </span><span class="s0">StatelessWidget {</span>
+  dynamic users<span class="s2">;</span>
+  <span class="s0">HelpMePageLayout({</span><span class="s2">this</span><span class="s0">.users})</span><span class="s2">;</span>
+
+  <span class="s0">@override</span>
+  Widget build(BuildContext context) {
+    <span class="s2">final </span><span class="s0">Size screenSize = MediaQuery.of(context).size</span><span class="s2">;</span>
+
+    return new <span class="s0">Container(</span>
+      child: <span class="s2">new </span><span class="s0">HelpMePage(users: users)</span><span class="s2">,</span>
+      <span class="s0">width: screenSize.width</span><span class="s2">,</span>
+      <span class="s0">height: screenSize.height</span><span class="s2">,</span>
+    <span class="s0">)</span><span class="s2">;</span>
+  <span class="s0">}</span>
+}
+
+<span class="s2">class </span><span class="s0">HelpMePage </span><span class="s2">extends </span><span class="s0">StatefulWidget {</span>
+  dynamic users<span class="s2">;</span>
+  <span class="s0">HelpMePage({</span><span class="s2">this</span><span class="s0">.users})</span><span class="s2">;</span>
+  <span class="s0">@override</span>
+  HelpMePageState createState() =&gt; <span class="s2">new </span><span class="s0">HelpMePageState(users: users)</span><span class="s2">;</span>
+<span class="s0">}</span>
+
+<span class="s2">class </span><span class="s0">HelpMePageState </span><span class="s2">extends </span><span class="s0">State&lt;HelpMePage&gt; </span><span class="s2">with </span><span class="s0">TickerProviderStateMixin {</span>
+  dynamic users<span class="s2">;</span>
+  var <span class="s0">userkey</span><span class="s2">;</span>
+
+  <span class="s0">HelpMePageState({</span><span class="s2">this</span><span class="s0">.users})</span><span class="s2">;</span>
+
+  <span class="s0">Firestore firestore = Firestore.instance</span><span class="s2">;</span>
+  <span class="s0">Geoflutterfire geo = Geoflutterfire()</span><span class="s2">;</span>
+
+  <span class="s0">Map&lt;MarkerId</span><span class="s2">, </span><span class="s0">Marker&gt; markers = &lt;MarkerId</span><span class="s2">, </span><span class="s0">Marker&gt;{}</span><span class="s2">;</span>
+  void <span class="s0">getMyLocation() async {</span>
+    String device_id = await DeviceId.getID<span class="s2">;</span>
+    var <span class="s0">markerIdVal = MarkerId(device_id)</span><span class="s2">;</span>
+    var <span class="s0">currentLocation = await Geolocator()</span>
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)<span class="s2">;</span>
+    <span class="s0">firestore.collection(</span><span class="s1">'locations'</span><span class="s0">).add({</span>
+      <span class="s1">'latitude'</span><span class="s0">: currentLocation.latitude</span><span class="s2">,</span>
+      <span class="s1">'longitude'</span><span class="s0">: currentLocation.longitude</span><span class="s2">,</span>
+      <span class="s1">'deviceid'</span><span class="s0">: device_id</span>
+    })<span class="s2">;</span>
+
+    <span class="s0">setState(() {</span>
+      markers.clear()<span class="s2">;</span>
+      final <span class="s0">marker = Marker(</span>
+        markerId: markerIdVal<span class="s2">,</span>
+        <span class="s0">position: LatLng(currentLocation.latitude</span><span class="s2">, </span><span class="s0">currentLocation.longitude)</span><span class="s2">,</span>
+        <span class="s0">infoWindow: InfoWindow(title: </span><span class="s1">'Your Location'</span><span class="s0">)</span><span class="s2">,</span>
+      <span class="s0">)</span><span class="s2">;</span>
+      <span class="s0">markers[markerIdVal] = marker</span><span class="s2">;</span>
+    <span class="s0">})</span><span class="s2">;</span>
+  <span class="s0">}</span>
+
+  @override
+  Widget build(BuildContext context) {
+    <span class="s2">return new </span><span class="s0">Scaffold(</span>
+      appBar: AppBar(
+        centerTitle: <span class="s2">true,</span>
+        <span class="s0">title: Text(</span><span class="s1">&quot;Help&quot;</span><span class="s0">)</span><span class="s2">,</span>
+      <span class="s0">)</span><span class="s2">,</span>
+      <span class="s0">body: </span><span class="s2">new </span><span class="s0">Center(</span>
+        child: <span class="s2">new </span><span class="s0">Column(</span>
+          mainAxisAlignment: MainAxisAlignment.center<span class="s2">,</span>
+          <span class="s0">children: &lt;Widget&gt;[</span>
+            <span class="s2">new </span><span class="s0">IconButton(</span>
+                icon: <span class="s2">new </span><span class="s0">Icon(Icons.error)</span><span class="s2">,</span>
+                <span class="s0">onPressed: getMyLocation</span><span class="s2">,</span>
+                <span class="s0">iconSize: </span><span class="s3">100</span><span class="s0">)</span><span class="s2">,</span>
+
+            new <span class="s0">Text(</span><span class="s1">&quot;BroadCast My Location&quot;</span><span class="s0">)</span>
+          ]<span class="s2">,</span>
+        <span class="s0">)</span><span class="s2">,</span>
+      <span class="s0">)</span><span class="s2">,</span>
+      <span class="s0">bottomNavigationBar: BottomAppBar(</span>
+        child: <span class="s2">new </span><span class="s0">Row(</span>
+          mainAxisSize: MainAxisSize.max<span class="s2">,</span>
+          <span class="s0">mainAxisAlignment: MainAxisAlignment.spaceBetween</span><span class="s2">,</span>
+          <span class="s0">children: &lt;Widget&gt;[</span>
+            FlatButton(
+              child: Text(<span class="s1">&quot;Help Me!&quot;</span><span class="s0">)</span><span class="s2">,</span>
+              <span class="s0">onPressed: () {}</span><span class="s2">,</span>
+            <span class="s0">)</span><span class="s2">,</span>
+            <span class="s0">FlatButton(</span>
+              child: Text(<span class="s1">&quot;Help Neighbor!&quot;</span><span class="s0">)</span><span class="s2">,</span>
+              <span class="s0">onPressed: () async {</span>
+                await Navigator.of(context).pushNamed(<span class="s1">'/n'</span><span class="s0">)</span><span class="s2">;</span>
+              <span class="s0">}</span><span class="s2">,</span>
+            <span class="s0">)</span><span class="s2">,</span>
+          <span class="s0">]</span><span class="s2">,</span>
+        <span class="s0">)</span><span class="s2">,</span>
+      <span class="s0">)</span><span class="s2">,</span>
+    <span class="s0">)</span><span class="s2">;</span>
+  <span class="s0">}</span>
+}
+</pre>
+</body>
+</html>
