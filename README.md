@@ -15,4 +15,3 @@ users can successfully get location from database and see the location on the ma
 
 ## What's next for Help Neib
 Sgn-in/Sign-up
-More specific demand
